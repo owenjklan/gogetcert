@@ -60,13 +60,20 @@ func downloadServerCert(conn *tls.Conn, serverName string) (*x509.Certificate, e
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Fprintf(os.Stderr, "Usage: %s server\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage: %s server [port]\n", os.Args[0])
 		os.Exit(1)
 	}
 
+	serverPort := "443"
+
+	// Do we have an extra arg? If so, assume it's a port
+	if len(os.Args) > 2 {
+		serverPort = os.Args[2]
+	}
+
 	serverName := os.Args[1]
-	serverAddr := serverName + ":443"
-	fmt.Printf("Downloading certificate from %s\n", serverName)
+	serverAddr := serverName + ":" + serverPort
+	fmt.Printf("Downloading certificate from %s (%s)\n", serverName, serverAddr)
 
 	serverConn, err := tls.Dial("tcp4", serverAddr, nil)
 	if err != nil {
