@@ -5,11 +5,14 @@ being able to pull it down off github is useful for me.
 
 You use it like:
 ```
-./getcert server
+./getcert [options] server
 ```
+### Options
+## --insecure
+Disable verification of certificates.
 
-Where server is currently assumed to be an HTTPS server, listening
-on port 443.
+## --port _int_
+Connect to the supplied port number. The default assumes 443
 
 What you should get is a collection of one or more certificates,
 representing each certificate from the chain of trust that the
