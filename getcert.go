@@ -1,11 +1,13 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
 	"os"
+	"strconv"
 )
 
 func printCertInfo(cert x509.Certificate) {
@@ -59,23 +61,33 @@ func downloadServerCert(conn *tls.Conn, serverName string) (*x509.Certificate, e
 }
 
 func main() {
+	insecureCerts := flag.Bool("insecure", false, "Don't validate certificates")
+	serverPort := flag.Int("port", 443, "Port number to connect on")
+
 	if len(os.Args) < 2 {
-		fmt.Fprintf(os.Stderr, "Usage: %s server [port]\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage: %s server [options]\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "\nOptions:\n")
+		flag.PrintDefaults()
 		os.Exit(1)
 	}
 
-	serverPort := "443"
+	flag.Parse()
 
-	// Do we have an extra arg? If so, assume it's a port
-	if len(os.Args) > 2 {
-		serverPort = os.Args[2]
-	}
-
+	serverPortStr := strconv.FormatInt(int64(*serverPort), 10)
+	fmt.Println("serverPortStr: ", serverPortStr)
 	serverName := os.Args[1]
-	serverAddr := serverName + ":" + serverPort
+	serverAddr := serverName + ":" + serverPortStr
+
 	fmt.Printf("Downloading certificate from %s (%s)\n", serverName, serverAddr)
 
-	serverConn, err := tls.Dial("tcp4", serverAddr, nil)
+	skipVerifyCerts := *insecureCerts
+	if skipVerifyCerts {
+		fmt.Fprintf(os.Stderr, "!!! Not validating certificates !!!\n")
+	}
+
+	tlsConfig := tls.Config{InsecureSkipVerify: skipVerifyCerts}
+	serverConn, err := tls.Dial("tcp4", serverAddr, &tlsConfig)
+
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error connecting to %s! %q\n", serverAddr, err)
 		os.Exit(1)
