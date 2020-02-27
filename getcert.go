@@ -60,29 +60,36 @@ func downloadServerCert(conn *tls.Conn, serverName string) (*x509.Certificate, e
 	return nil, nil
 }
 
+func usage() {
+	fmt.Fprintf(os.Stderr, "Usage: %s [options] server\n", os.Args[0])
+	fmt.Fprintf(os.Stderr, "\nOptions:\n")
+	flag.PrintDefaults()
+	os.Exit(1)
+}
+
 func main() {
 	insecureCerts := flag.Bool("insecure", false, "Don't validate certificates")
 	serverPort := flag.Int("port", 443, "Port number to connect on")
 
 	if len(os.Args) < 2 {
-		fmt.Fprintf(os.Stderr, "Usage: %s server [options]\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "\nOptions:\n")
-		flag.PrintDefaults()
-		os.Exit(1)
+		usage()
 	}
 
 	flag.Parse()
 
 	serverPortStr := strconv.FormatInt(int64(*serverPort), 10)
-	fmt.Println("serverPortStr: ", serverPortStr)
-	serverName := os.Args[1]
+
+	if len(flag.Args()) < 1 {
+		usage()
+	}
+	serverName := flag.Args()[0]
 	serverAddr := serverName + ":" + serverPortStr
 
 	fmt.Printf("Downloading certificate from %s (%s)\n", serverName, serverAddr)
 
 	skipVerifyCerts := *insecureCerts
 	if skipVerifyCerts {
-		fmt.Fprintf(os.Stderr, "!!! Not validating certificates !!!\n")
+		fmt.Fprintf(os.Stderr, "\033[1;31m!!! Not validating certificates !!!\033[0m\n")
 	}
 
 	tlsConfig := tls.Config{InsecureSkipVerify: skipVerifyCerts}
