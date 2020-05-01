@@ -11,8 +11,11 @@ import (
 )
 
 func printCertInfo(cert x509.Certificate) {
-	fmt.Printf("Valid From: %q\n", cert.NotBefore)
-	fmt.Printf("Expiry:     %q\n", cert.NotAfter)
+	fmt.Printf("Subject:   %q\n", cert.Subject)
+	fmt.Printf(" Issuer:  %q\n", cert.Issuer)
+
+	fmt.Printf("  Valid From: %q\n", cert.NotBefore)
+	fmt.Printf("  Expiry:     %q\n", cert.NotAfter)
 	fmt.Printf("Subject Alt. Names:\n")
 	
 	if len(cert.DNSNames) > 0 {
