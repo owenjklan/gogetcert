@@ -5,27 +5,34 @@ import (
 	"fmt"
 	"crypto/tls"
 	"crypto/x509"
+	"crypto/x509/pkix"
 	"encoding/pem"
 	"os"
 	"strconv"
 )
 
 func printCertInfo(cert x509.Certificate) {
-	fmt.Printf("Subject:   %q\n", cert.Subject)
-	fmt.Printf(" Issuer:  %q\n", cert.Issuer)
+	fmt.Printf("Subject:      %q\n", cert.Subject)
+	prettyPrintName(cert.Subject)
+	fmt.Printf("  Issuer:     %q\n", cert.Issuer)
 
 	fmt.Printf("  Valid From: %q\n", cert.NotBefore)
 	fmt.Printf("  Expiry:     %q\n", cert.NotAfter)
-	fmt.Printf("Subject Alt. Names:\n")
 	
 	if len(cert.DNSNames) > 0 {
+		fmt.Printf("  Subject Alt. Names:\n")
 		for index, subAltName := range cert.DNSNames {
-			fmt.Printf("\t\033[1;33m#%2d\033[0m %s\n", index, subAltName)
+			fmt.Printf("    \033[1;33m#%2d\033[0m %s\n", index, subAltName)
 		}
-	} else {
-		fmt.Printf(" \t\033[33m- None -\033[0m\n")
 	}
 	fmt.Printf("\n")
+}
+
+func prettyPrintName(name pkix.Name) {
+	fmt.Printf("     CN:  %s\n", name.CommonName)
+	fmt.Printf("      O:  %s\n", name.Organization)
+	fmt.Printf("     OU:  %s\n", name.OrganizationalUnit)
+	fmt.Printf("Country:  %s\n", name.Country)
 }
 
 func saveCertToPEM(cert x509.Certificate, serverName string,  certNumber int) {
